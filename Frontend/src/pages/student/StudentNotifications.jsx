@@ -1,3 +1,3 @@
 export default function StudentNotifications() {
-  return <div>Student Notifications</div>
+  return <div className="text-white p-8">Student Notifications</div>
 }
