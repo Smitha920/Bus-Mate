@@ -218,6 +218,14 @@ export default function StudentLogin() {
       >
         ← Back to Home
       </p>
+      <button
+  type="button"
+  onClick={() => navigate('/student/dashboard')}
+  className="w-full py-3 rounded-xl text-sm text-[#6b7a99] border border-[#1e2d45] cursor-pointer mt-2"
+  style={{ background: 'transparent' }}
+>
+  Preview Dashboard →
+</button>
 
     </div>
   )
