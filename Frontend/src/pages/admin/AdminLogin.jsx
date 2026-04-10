@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
@@ -8,26 +9,47 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { adminLogin } = useAuth()
 
-  const handleLogin = (e) => {
-    e.preventDefault()
-    setError('')
+  const handleLogin = async (e) => {
+  e.preventDefault()
+  setError('')
 
-    if (!username.trim()) {
-      setError('Please enter your username')
-      return
-    }
-    if (!password.trim()) {
-      setError('Please enter your password')
-      return
-    }
+  if (!username.trim()) { setError('Please enter username'); return }
+  if (!password.trim()) { setError('Please enter password'); return }
 
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      navigate('/admin/dashboard')
-    }, 1500)
+  setLoading(true)
+  try {
+    await adminLogin(username, password)
+    navigate('/admin/dashboard')
+  } catch (err) {
+    setError(err.response?.data?.message || 'Login failed. Try again.')
+  } finally {
+    setLoading(false)
   }
+}
+
+  
+
+  // const handleLogin = (e) => {
+  //   e.preventDefault()
+  //   setError('')
+
+  //   if (!username.trim()) {
+  //     setError('Please enter your username')
+  //     return
+  //   }
+  //   if (!password.trim()) {
+  //     setError('Please enter your password')
+  //     return
+  //   }
+
+  //   setLoading(true)
+  //   setTimeout(() => {
+  //     setLoading(false)
+  //     navigate('/admin/dashboard')
+  //   }, 1500)
+  // }
 
   return (
     <div

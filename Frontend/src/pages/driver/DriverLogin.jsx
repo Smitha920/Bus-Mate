@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 export default function DriverLogin() {
   const navigate = useNavigate()
@@ -8,28 +9,48 @@ export default function DriverLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { driverLogin } = useAuth()
+
 
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setError('')
+  e.preventDefault()
+  setError('')
 
-    if (!driverId.trim()) {
-      setError('Please enter your Driver ID')
-      return
-    }
-    if (!password.trim()) {
-      setError('Please enter your password')
-      return
-    }
+  if (!driverId.trim()) { setError('Please enter your Driver ID'); return }
+  if (!password.trim()) { setError('Please enter your password'); return }
 
-    setLoading(true)
-
-    // Simulate API call for now
-    setTimeout(() => {
-      setLoading(false)
-      navigate('/driver/dashboard')
-    }, 1500)
+  setLoading(true)
+  try {
+    await driverLogin(driverId, password)
+    navigate('/driver/dashboard')
+  } catch (err) {
+    setError(err.response?.data?.message || 'Login failed. Try again.')
+  } finally {
+    setLoading(false)
   }
+}
+
+  // const handleLogin = async (e) => {
+  //   e.preventDefault()
+  //   setError('')
+
+  //   if (!driverId.trim()) {
+  //     setError('Please enter your Driver ID')
+  //     return
+  //   }
+  //   if (!password.trim()) {
+  //     setError('Please enter your password')
+  //     return
+  //   }
+
+  //   setLoading(true)
+
+  //   // Simulate API call for now
+  //   setTimeout(() => {
+  //     setLoading(false)
+  //     navigate('/driver/dashboard')
+  //   }, 1500)
+  // }
 
   return (
     <div

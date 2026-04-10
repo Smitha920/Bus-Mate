@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 export default function StudentLogin() {
   const navigate = useNavigate()
@@ -8,33 +9,53 @@ export default function StudentLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { studentLogin } = useAuth()
 
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setError('')
+  e.preventDefault()
+  setError('')
 
-    // Basic validation
-    if (!usn.trim()) {
-      setError('Please enter your USN')
-      return
-    }
-    if (!password.trim()) {
-      setError('Please enter your password')
-      return
-    }
-    if (usn.length < 10) {
-      setError('Please enter a valid USN')
-      return
-    }
+  if (!usn.trim()) { setError('Please enter your USN'); return }
+  if (!password.trim()) { setError('Please enter your password'); return }
+  if (usn.length < 10) { setError('Please enter a valid USN'); return }
 
-    setLoading(true)
-
-    // Simulate API call for now
-    setTimeout(() => {
-      setLoading(false)
-      navigate('/student/dashboard')
-    }, 1500)
+  setLoading(true)
+  try {
+    await studentLogin(usn, password)
+    navigate('/student/dashboard')
+  } catch (err) {
+    setError(err.response?.data?.message || 'Login failed. Try again.')
+  } finally {
+    setLoading(false)
   }
+}
+
+  // const handleLogin = async (e) => {
+  //   e.preventDefault()
+  //   setError('')
+
+  //   // Basic validation
+  //   if (!usn.trim()) {
+  //     setError('Please enter your USN')
+  //     return
+  //   }
+  //   if (!password.trim()) {
+  //     setError('Please enter your password')
+  //     return
+  //   }
+  //   if (usn.length < 10) {
+  //     setError('Please enter a valid USN')
+  //     return
+  //   }
+
+  //   setLoading(true)
+
+  //   // Simulate API call for now
+  //   setTimeout(() => {
+  //     setLoading(false)
+  //     navigate('/student/dashboard')
+  //   }, 1500)
+  // }
 
   return (
     <div
