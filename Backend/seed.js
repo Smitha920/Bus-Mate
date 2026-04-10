@@ -6,11 +6,12 @@ const User = require('./models/User')
 const Stop = require('./models/Stop')
 
 const stops = [
-  { name: 'Suburb Bus Stop',order: 1, latitude: 12.2958, longitude: 76.6394, route: 'Route A' },
-  { name: 'R-gate', order: 2, latitude: 12.3020, longitude: 76.6450, route: 'Route A' },
-  { name: 'Palace Gate',     order: 3, latitude: 12.3080, longitude: 76.6510, route: 'Route A' },
-  { name: 'Dasappa', order: 4, latitude: 12.3140, longitude: 76.6570, route: 'Route A' },
-  { name: 'Vontikoppal', order: 5, latitude: 12.3200, longitude: 76.6630, route: 'Route A' },
+  { name: 'City',        order: 1, latitude: 12.2958, longitude: 76.6394, route: 'Route A' },
+  { name: 'Varthikopal', order: 2, latitude: 12.3020, longitude: 76.6450, route: 'Route A' },
+  { name: 'Indappa',     order: 3, latitude: 12.3080, longitude: 76.6510, route: 'Route A' },
+  { name: 'Post Office', order: 4, latitude: 12.3140, longitude: 76.6570, route: 'Route A' },
+  { name: 'Palace Gate', order: 5, latitude: 12.3200, longitude: 76.6630, route: 'Route A' },
+  { name: 'A Gate',      order: 6, latitude: 12.3260, longitude: 76.6690, route: 'Route A' },
   { name: 'College',     order: 7, latitude: 12.3320, longitude: 76.6750, route: 'Route A' },
 ]
 
@@ -33,7 +34,7 @@ const seedData = async () => {
     await User.create({
       name: 'Admin',
       uniqueId: 'admin',
-      password: adminPassword,
+      password: 'admin123',
       role: 'admin',
     })
     console.log('Admin created — username: admin, password: admin123')
@@ -41,10 +42,10 @@ const seedData = async () => {
     // Add driver
     const driverPassword = await bcrypt.hash('driver123', 10)
     await User.create({
-      name: 'Naveen',
+      name: 'Ravi Kumar',
       uniqueId: 'DRV001',
       driverId: 'DRV001',
-      password: driverPassword,
+      password: 'driver123',
       role: 'driver',
       phone: '9876543210',
       assignedRoute: 'Route A',
@@ -59,7 +60,7 @@ const seedData = async () => {
       name: 'Test Student',
       uniqueId: '1VV22CS001',
       usn: '1VV22CS001',
-      password: studentPassword,
+      password: 'student123',
       role: 'student',
       phone: '9876543211',
       year: '2nd Year',

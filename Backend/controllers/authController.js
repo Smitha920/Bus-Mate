@@ -16,7 +16,13 @@ const studentLogin = async (req, res) => {
       return res.status(401).json({ message: 'Invalid USN or not registered' })
     }
 
+    // const isMatch = await user.matchPassword(password)
+    console.log("Entered password:", password)
+    console.log("Stored hash:", user.password)
+
     const isMatch = await user.matchPassword(password)
+
+    console.log("Match result:", isMatch)
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid password' })
     }
@@ -105,5 +111,6 @@ const adminLogin = async (req, res) => {
 const getMe = async (req, res) => {
   res.json(req.user)
 }
+
 
 module.exports = { studentLogin, driverLogin, adminLogin, getMe }
