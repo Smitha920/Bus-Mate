@@ -4,262 +4,157 @@ import { useAuth } from '../../context/AuthContext'
 
 export default function DriverLogin() {
   const navigate = useNavigate()
+  const { driverLogin } = useAuth()
   const [driverId, setDriverId] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { driverLogin } = useAuth()
-
 
   const handleLogin = async (e) => {
-  e.preventDefault()
-  setError('')
+    e.preventDefault()
+    setError('')
+    if (!driverId.trim()) { setError('Please enter your Driver ID'); return }
+    if (!password.trim()) { setError('Please enter your password'); return }
 
-  if (!driverId.trim()) { setError('Please enter your Driver ID'); return }
-  if (!password.trim()) { setError('Please enter your password'); return }
-
-  setLoading(true)
-  try {
-    await driverLogin(driverId, password)
-    navigate('/driver/dashboard')
-  } catch (err) {
-    setError(err.response?.data?.message || 'Login failed. Try again.')
-  } finally {
-    setLoading(false)
+    setLoading(true)
+    try {
+      await driverLogin(driverId, password)
+      navigate('/driver/dashboard')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed. Try again.')
+    } finally {
+      setLoading(false)
+    }
   }
-}
-
-  // const handleLogin = async (e) => {
-  //   e.preventDefault()
-  //   setError('')
-
-  //   if (!driverId.trim()) {
-  //     setError('Please enter your Driver ID')
-  //     return
-  //   }
-  //   if (!password.trim()) {
-  //     setError('Please enter your password')
-  //     return
-  //   }
-
-  //   setLoading(true)
-
-  //   // Simulate API call for now
-  //   setTimeout(() => {
-  //     setLoading(false)
-  //     navigate('/driver/dashboard')
-  //   }, 1500)
-  // }
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-6"
       style={{
-        background: 'linear-gradient(135deg, #0a0e1a 0%, #130e0a 50%, #0a0e1a 100%)'
+        background: 'linear-gradient(135deg, #0a0e1a 0%, #130e0a 50%, #0a0e1a 100%)',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
       }}
     >
-
-      {/* Background glow — orange for driver */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/2 left-1/2 w-[600px] h-[600px] rounded-full opacity-5"
-          style={{
-            background: 'radial-gradient(circle, #f97316, transparent)',
-            transform: 'translate(-50%, -50%)'
-          }}
-        ></div>
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, #f97316, transparent)', opacity: 0.05, transform: 'translate(-50%, -50%)' }}></div>
       </div>
 
-      {/* Card */}
-      <div
-        className="relative z-10 w-full max-w-md rounded-3xl p-8 md:p-10 border border-[#2d1e0a]"
-        style={{ background: 'rgba(17, 24, 39, 0.95)' }}
-      >
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '420px', background: 'rgba(17,24,39,0.95)', border: '1px solid #2d1e0a', borderRadius: '24px', padding: '40px 32px' }}>
 
         {/* Logo */}
-        <div className="flex flex-col items-center mb-10">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-            style={{
-              background: 'linear-gradient(135deg, #f97316, #ea580c)',
-              boxShadow: '0 0 30px rgba(249, 115, 22, 0.3)'
-            }}
-          >
-            <span className="text-2xl">🚌</span>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ width: '56px', height: '56px', background: 'linear-gradient(135deg, #f97316, #ea580c)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', margin: '0 auto 16px auto', boxShadow: '0 0 30px rgba(249,115,22,0.3)' }}>
+            🚌
           </div>
-          <h1 className="text-2xl font-bold text-white"
-            style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Bus<span className="text-orange-400">Mate</span>
+          <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: '22px', fontWeight: 700, color: '#fff', margin: '0 0 4px 0' }}>
+            Bus<span style={{ color: '#f97316' }}>Mate</span>
           </h1>
-          <p className="text-[10px] text-[#6b7a99] mt-1 uppercase tracking-widest">
+          <p style={{ fontSize: '10px', color: '#6b7a99', margin: '0 0 12px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>
             Never Miss College Bus Again
           </p>
-          <div
-            className="mt-4 px-4 py-1.5 rounded-full border"
-            style={{
-              background: 'rgba(249, 115, 22, 0.08)',
-              borderColor: 'rgba(249, 115, 22, 0.3)'
-            }}
-          >
-            <p className="text-xs text-orange-400 font-medium">Driver Portal</p>
+          <div style={{ display: 'inline-block', padding: '6px 16px', borderRadius: '999px', background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.3)' }}>
+            <p style={{ fontSize: '12px', color: '#f97316', fontWeight: 500, margin: 0 }}>Driver Portal</p>
           </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleLogin} className="flex flex-col gap-5">
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-          {/* Driver ID Field */}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm text-[#6b7a99] font-medium">
-              Driver ID
-            </label>
+          {/* Driver ID */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '13px', color: '#6b7a99', fontWeight: 500 }}>Driver ID</label>
             <input
               type="text"
               value={driverId}
               onChange={(e) => setDriverId(e.target.value.toUpperCase())}
               placeholder="DRV001"
-              className="w-full px-4 py-3.5 rounded-xl text-white text-sm outline-none border border-[#2d1e0a]"
-              style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                fontFamily: 'Space Mono, monospace',
-                letterSpacing: '1px',
-                transition: 'border-color 0.2s',
-              }}
+              style={{ width: '100%', padding: '14px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid #2d1e0a', color: '#fff', fontSize: '14px', outline: 'none', fontFamily: 'Space Mono, monospace', letterSpacing: '1px', boxSizing: 'border-box' }}
               onFocus={e => e.target.style.borderColor = '#f97316'}
               onBlur={e => e.target.style.borderColor = '#2d1e0a'}
             />
-            <p className="text-xs text-[#6b7a99]">
-              Format: DRV001 — provided by admin
-            </p>
+            <p style={{ fontSize: '12px', color: '#6b7a99', margin: 0 }}>Format: DRV001 — provided by admin</p>
           </div>
 
-          {/* Password Field */}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm text-[#6b7a99] font-medium">
-              Password
-            </label>
-            <div className="relative">
+          {/* Password */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '13px', color: '#6b7a99', fontWeight: 500 }}>Password</label>
+            <div style={{ position: 'relative' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full px-4 py-3.5 rounded-xl text-white text-sm outline-none border border-[#2d1e0a] pr-12"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  transition: 'border-color 0.2s'
-                }}
+                style={{ width: '100%', padding: '14px 48px 14px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid #2d1e0a', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
                 onFocus={e => e.target.style.borderColor = '#f97316'}
                 onBlur={e => e.target.style.borderColor = '#2d1e0a'}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7a99] hover:text-white text-lg"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'color 0.2s'
-                }}
+                style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}
               >
                 {showPassword ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
 
-          {/* Forgot password */}
-          <div className="flex justify-end">
-            <span
-              className="text-xs text-orange-400 cursor-pointer hover:underline"
-              onClick={() => alert('Contact admin: admin@vvce.ac.in')}
-            >
+          {/* Forgot */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <span style={{ fontSize: '12px', color: '#f97316', cursor: 'pointer' }}
+              onClick={() => alert('Contact admin: admin@vvce.ac.in')}>
               Forgot password?
             </span>
           </div>
 
-          {/* Error message */}
+          {/* Error */}
           {error && (
-            <div
-              className="px-4 py-3 rounded-xl border text-sm text-red-400"
-              style={{
-                background: 'rgba(255, 59, 92, 0.08)',
-                borderColor: 'rgba(255, 59, 92, 0.3)'
-              }}
-            >
+            <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(255,59,92,0.08)', border: '1px solid rgba(255,59,92,0.3)', fontSize: '13px', color: '#ff3b5c' }}>
               ⚠️ {error}
             </div>
           )}
 
-          {/* Login Button */}
+          {/* Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl font-bold text-white text-base mt-2 cursor-pointer border-none"
-            style={{
-              background: loading
-                ? 'rgba(249, 115, 22, 0.4)'
-                : 'linear-gradient(135deg, #f97316, #ea580c)',
-              boxShadow: loading
-                ? 'none'
-                : '0 0 30px rgba(249, 115, 22, 0.3)',
-              fontFamily: 'Inter, sans-serif',
-              transition: 'all 0.3s'
-            }}
+            style={{ width: '100%', padding: '16px', borderRadius: '14px', background: loading ? 'rgba(249,115,22,0.4)' : 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', color: '#fff', fontSize: '15px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: loading ? 'none' : '0 0 30px rgba(249,115,22,0.3)' }}
           >
             {loading ? 'Logging in...' : 'Check In →'}
           </button>
 
         </form>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-[#2d1e0a]"></div>
-          <span className="text-xs text-[#6b7a99]">or</span>
-          <div className="flex-1 h-px bg-[#2d1e0a]"></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0' }}>
+          <div style={{ flex: 1, height: '1px', background: '#2d1e0a' }}></div>
+          <span style={{ fontSize: '12px', color: '#6b7a99' }}>or</span>
+          <div style={{ flex: 1, height: '1px', background: '#2d1e0a' }}></div>
         </div>
 
-        {/* Student link */}
-        <p className="text-center text-sm text-[#6b7a99]">
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#6b7a99', margin: '0 0 16px 0' }}>
           Are you a student?{' '}
-          <span
-            className="text-cyan-400 font-medium cursor-pointer hover:underline"
-            onClick={() => navigate('/login')}
-          >
+          <span style={{ color: '#00e5ff', cursor: 'pointer', fontWeight: 500 }}
+            onClick={() => navigate('/login')}>
             Student Login →
           </span>
         </p>
 
-        {/* Info card */}
-        <div
-          className="mt-6 p-4 rounded-2xl border"
-          style={{
-            background: 'rgba(249, 115, 22, 0.05)',
-            borderColor: 'rgba(249, 115, 22, 0.2)'
-          }}
-        >
-          <p className="text-xs text-[#6b7a99] leading-relaxed text-center">
-            🔒 Your check-in and check-out times are
-            recorded automatically for duty tracking.
+        <div style={{ padding: '14px 16px', borderRadius: '14px', background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+          <p style={{ fontSize: '12px', color: '#6b7a99', margin: 0, textAlign: 'center', lineHeight: 1.6 }}>
+            🔒 Your check-in and check-out times are recorded automatically
           </p>
         </div>
 
       </div>
 
-      {/* Note */}
-      <p className="relative z-10 text-xs text-[#6b7a99] mt-6 text-center">
+      <p style={{ position: 'relative', zIndex: 10, fontSize: '12px', color: '#6b7a99', marginTop: '16px' }}>
         Access restricted to VVCE registered drivers only
       </p>
-
-      
-
-      {/* Back to home */}
-      <p
-        className="relative z-10 text-xs text-[#6b7a99] mt-3 cursor-pointer hover:text-white"
-        onClick={() => navigate('/')}
-        style={{ transition: 'color 0.2s' }}
-      >
+      <p style={{ position: 'relative', zIndex: 10, fontSize: '12px', color: '#6b7a99', marginTop: '8px', cursor: 'pointer' }}
+        onClick={() => navigate('/')}>
         ← Back to Home
       </p>
 

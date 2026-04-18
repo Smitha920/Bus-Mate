@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const routes = ['Route A', 'Route B', 'Route C']
+const routes = ['College to Suburb', 'Suburb to College']
 
 export default function AddDriver() {
   const navigate = useNavigate()
