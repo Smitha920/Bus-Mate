@@ -1,33 +1,57 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import api from '../../services/api'
 
 const routes = ['College to Suburb', 'Suburb to College']
 
 export default function AddDriver() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    name: '', driverId: '', phone: '', address: '',
-    dob: '', license: '', experience: '', route: '', photo: null
+    name: '', driverId: '', password: '', phone: '',
+    address: '', dob: '', licenseNumber: '', experience: '', assignedRoute: ''
   })
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    if (!form.name || !form.phone || !form.license || !form.route) {
+
+    if (!form.name || !form.driverId || !form.password || !form.phone || !form.licenseNumber || !form.assignedRoute) {
       setError('Please fill all required fields')
       return
     }
-    setSuccess(true)
-    setTimeout(() => {
-      setSuccess(false)
-      setForm({ name: '', driverId: '', phone: '', address: '', dob: '', license: '', experience: '', route: '', photo: null })
-    }, 2000)
+    if (form.phone.length !== 10) {
+      setError('Please enter a valid 10 digit phone number')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await api.post('/admin/add-driver', {
+        name: form.name,
+        driverId: form.driverId.toUpperCase(),
+        password: form.password,
+        phone: form.phone,
+        address: form.address,
+        dob: form.dob,
+        licenseNumber: form.licenseNumber.toUpperCase(),
+        experience: Number(form.experience),
+        assignedRoute: form.assignedRoute,
+      })
+      setSuccess(true)
+      setForm({ name: '', driverId: '', password: '', phone: '', address: '', dob: '', licenseNumber: '', experience: '', assignedRoute: '' })
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add driver. Try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const inputStyle = {
@@ -84,20 +108,6 @@ export default function AddDriver() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-          {/* Photo */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={labelStyle}>Photo (optional)</label>
-            <div
-              style={{ width: '80px', height: '80px', borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '2px dashed #1e2d45', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '28px' }}
-              onClick={() => document.getElementById('driver-photo').click()}
-            >
-              {form.photo ? '✅' : '📷'}
-            </div>
-            <input id="driver-photo" type="file" accept="image/*" style={{ display: 'none' }}
-              onChange={(e) => handleChange('photo', e.target.files[0])} />
-            <p style={{ fontSize: '12px', color: '#6b7a99', margin: 0 }}>Tap to upload driver photo</p>
-          </div>
-
           {/* Name */}
           <div>
             <label style={labelStyle}>Full Name *</label>
@@ -110,6 +120,40 @@ export default function AddDriver() {
               onFocus={e => e.target.style.borderColor = '#f97316'}
               onBlur={e => e.target.style.borderColor = '#1e2d45'}
             />
+          </div>
+
+          {/* Driver ID */}
+          <div>
+            <label style={labelStyle}>Driver ID *</label>
+            <input
+              type="text"
+              value={form.driverId}
+              onChange={(e) => handleChange('driverId', e.target.value.toUpperCase())}
+              placeholder="DRV004"
+              style={{ ...inputStyle, fontFamily: 'Space Mono, monospace', letterSpacing: '1px' }}
+              onFocus={e => e.target.style.borderColor = '#f97316'}
+              onBlur={e => e.target.style.borderColor = '#1e2d45'}
+            />
+            <p style={{ fontSize: '12px', color: '#6b7a99', margin: '6px 0 0 0' }}>
+              Format: DRV004 — this will be their login ID
+            </p>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label style={labelStyle}>Password *</label>
+            <input
+              type="text"
+              value={form.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              placeholder="Set a password for this driver"
+              style={inputStyle}
+              onFocus={e => e.target.style.borderColor = '#f97316'}
+              onBlur={e => e.target.style.borderColor = '#1e2d45'}
+            />
+            <p style={{ fontSize: '12px', color: '#6b7a99', margin: '6px 0 0 0' }}>
+              Share this password with the driver
+            </p>
           </div>
 
           {/* Phone */}
@@ -159,8 +203,8 @@ export default function AddDriver() {
             <label style={labelStyle}>Driving License Number *</label>
             <input
               type="text"
-              value={form.license}
-              onChange={(e) => handleChange('license', e.target.value.toUpperCase())}
+              value={form.licenseNumber}
+              onChange={(e) => handleChange('licenseNumber', e.target.value.toUpperCase())}
               placeholder="KA0120190012345"
               style={{ ...inputStyle, fontFamily: 'Space Mono, monospace', letterSpacing: '1px' }}
               onFocus={e => e.target.style.borderColor = '#f97316'}
@@ -192,11 +236,26 @@ export default function AddDriver() {
                 <button
                   key={route}
                   type="button"
-                  onClick={() => handleChange('route', route)}
-                  style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid', cursor: 'pointer', fontSize: '14px', fontWeight: 500, fontFamily: 'Inter, sans-serif', textAlign: 'left', background: form.route === route ? 'rgba(249,115,22,0.08)' : 'rgba(255,255,255,0.04)', borderColor: form.route === route ? '#f97316' : '#1e2d45', color: form.route === route ? '#f97316' : '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  onClick={() => handleChange('assignedRoute', route)}
+                  style={{
+                    padding: '14px 16px',
+                    borderRadius: '10px',
+                    border: '1px solid',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    fontFamily: 'Inter, sans-serif',
+                    textAlign: 'left',
+                    background: form.assignedRoute === route ? 'rgba(249,115,22,0.08)' : 'rgba(255,255,255,0.04)',
+                    borderColor: form.assignedRoute === route ? '#f97316' : '#1e2d45',
+                    color: form.assignedRoute === route ? '#f97316' : '#e8f0fe',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
                 >
                   <span>🗺️ {route}</span>
-                  {form.route === route && <span>✓</span>}
+                  {form.assignedRoute === route && <span>✓</span>}
                 </button>
               ))}
             </div>
@@ -212,9 +271,23 @@ export default function AddDriver() {
           {/* Submit */}
           <button
             type="submit"
-            style={{ width: '100%', padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, #f97316, #ea580c)', border: 'none', color: '#fff', fontSize: '15px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginTop: '8px', boxShadow: '0 0 30px rgba(249,115,22,0.3)' }}
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '16px',
+              borderRadius: '14px',
+              background: loading ? 'rgba(249,115,22,0.4)' : 'linear-gradient(135deg, #f97316, #ea580c)',
+              border: 'none',
+              color: '#fff',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              marginTop: '8px',
+              boxShadow: loading ? 'none' : '0 0 30px rgba(249,115,22,0.3)',
+            }}
           >
-            Add Driver →
+            {loading ? 'Adding Driver...' : 'Add Driver →'}
           </button>
 
         </form>

@@ -1,41 +1,81 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const stops = [
-  'City', 'Varthikopal', 'Indappa',
-  'Post Office', 'Palace Gate', 'A Gate', 'College'
-]
+import api from '../../services/api'
 
 const years = ['1st Year', '2nd Year', '3rd Year', '4th Year']
 
 export default function AddStudent() {
   const navigate = useNavigate()
+  const [stops, setStops] = useState([])
   const [form, setForm] = useState({
-    name: '', usn: '', year: '', stop: '', phone: '', photo: null
+    name: '', usn: '', password: '', phone: '', year: '', assignedStop: ''
   })
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Fetch stops from backend
+  useEffect(() => {
+    api.get('/stops')
+      .then(res => {
+        // Only college to suburb stops
+        const filtered = res.data.filter(s => s.route === 'College to Suburb')
+        setStops(filtered)
+      })
+      .catch(() => {
+        // fallback stops if API fails
+        setStops([
+          { _id: '1', name: 'College' },
+          { _id: '2', name: 'Vontikoppal' },
+          { _id: '3', name: 'Dasappa Circle' },
+          { _id: '4', name: 'KRS Hospital' },
+          { _id: '5', name: 'Post Office' },
+          { _id: '6', name: 'Palace' },
+          { _id: '7', name: 'Harding Circle' },
+          { _id: '8', name: 'Suburb' },
+        ])
+      })
+  }, [])
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    if (!form.name || !form.usn || !form.year || !form.stop || !form.phone) {
+
+    if (!form.name || !form.usn || !form.password || !form.phone || !form.year || !form.assignedStop) {
       setError('Please fill all required fields')
       return
     }
     if (form.usn.length < 10) {
-      setError('Please enter a valid USN')
+      setError('Please enter a valid USN — 10 characters')
       return
     }
-    setSuccess(true)
-    setTimeout(() => {
-      setSuccess(false)
-      setForm({ name: '', usn: '', year: '', stop: '', phone: '', photo: null })
-    }, 2000)
+    if (form.phone.length !== 10) {
+      setError('Please enter a valid 10 digit phone number')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await api.post('/admin/add-student', {
+        name: form.name,
+        usn: form.usn.toUpperCase(),
+        password: form.password,
+        phone: form.phone,
+        year: form.year,
+        assignedStop: form.assignedStop,
+      })
+      setSuccess(true)
+      setForm({ name: '', usn: '', password: '', phone: '', year: '', assignedStop: '' })
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add student. Try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const inputStyle = {
@@ -82,7 +122,7 @@ export default function AddStudent() {
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '24px 20px' }}>
 
-        {/* SUCCESS MESSAGE */}
+        {/* SUCCESS */}
         {success && (
           <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(0,255,135,0.08)', border: '1px solid rgba(0,255,135,0.3)', marginBottom: '20px', textAlign: 'center' }}>
             <p style={{ fontSize: '24px', margin: '0 0 8px 0' }}>✅</p>
@@ -91,18 +131,6 @@ export default function AddStudent() {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-          {/* Photo Upload */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label style={labelStyle}>Photo (optional)</label>
-            <div style={{ width: '80px', height: '80px', borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '2px dashed #1e2d45', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '28px' }}
-              onClick={() => document.getElementById('student-photo').click()}>
-              {form.photo ? '✅' : '📷'}
-            </div>
-            <input id="student-photo" type="file" accept="image/*" style={{ display: 'none' }}
-              onChange={(e) => handleChange('photo', e.target.files[0])} />
-            <p style={{ fontSize: '12px', color: '#6b7a99', margin: 0 }}>Tap to upload student photo</p>
-          </div>
 
           {/* Name */}
           <div>
@@ -131,7 +159,26 @@ export default function AddStudent() {
               onFocus={e => e.target.style.borderColor = '#00e5ff'}
               onBlur={e => e.target.style.borderColor = '#1e2d45'}
             />
-            <p style={{ fontSize: '12px', color: '#6b7a99', margin: '6px 0 0 0' }}>Format: 1VV22CS001</p>
+            <p style={{ fontSize: '12px', color: '#6b7a99', margin: '6px 0 0 0' }}>
+              Format: 1VV22CS001 — this will be their login ID
+            </p>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label style={labelStyle}>Password *</label>
+            <input
+              type="text"
+              value={form.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              placeholder="Set a password for this student"
+              style={inputStyle}
+              onFocus={e => e.target.style.borderColor = '#00e5ff'}
+              onBlur={e => e.target.style.borderColor = '#1e2d45'}
+            />
+            <p style={{ fontSize: '12px', color: '#6b7a99', margin: '6px 0 0 0' }}>
+              Share this password with the student
+            </p>
           </div>
 
           {/* Phone */}
@@ -158,7 +205,18 @@ export default function AddStudent() {
                   key={y}
                   type="button"
                   onClick={() => handleChange('year', y)}
-                  style={{ padding: '10px', borderRadius: '10px', border: '1px solid', cursor: 'pointer', fontSize: '13px', fontWeight: 500, fontFamily: 'Inter, sans-serif', background: form.year === y ? 'rgba(0,229,255,0.1)' : 'rgba(255,255,255,0.04)', borderColor: form.year === y ? '#00e5ff' : '#1e2d45', color: form.year === y ? '#00e5ff' : '#6b7a99' }}
+                  style={{
+                    padding: '10px',
+                    borderRadius: '10px',
+                    border: '1px solid',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    fontFamily: 'Inter, sans-serif',
+                    background: form.year === y ? 'rgba(0,229,255,0.1)' : 'rgba(255,255,255,0.04)',
+                    borderColor: form.year === y ? '#00e5ff' : '#1e2d45',
+                    color: form.year === y ? '#00e5ff' : '#6b7a99',
+                  }}
                 >
                   {y}
                 </button>
@@ -172,13 +230,28 @@ export default function AddStudent() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {stops.map((stop) => (
                 <button
-                  key={stop}
+                  key={stop._id}
                   type="button"
-                  onClick={() => handleChange('stop', stop)}
-                  style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid', cursor: 'pointer', fontSize: '14px', fontWeight: 500, fontFamily: 'Inter, sans-serif', textAlign: 'left', background: form.stop === stop ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.04)', borderColor: form.stop === stop ? '#00e5ff' : '#1e2d45', color: form.stop === stop ? '#00e5ff' : '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                  onClick={() => handleChange('assignedStop', stop._id)}
+                  style={{
+                    padding: '12px 16px',
+                    borderRadius: '10px',
+                    border: '1px solid',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    fontFamily: 'Inter, sans-serif',
+                    textAlign: 'left',
+                    background: form.assignedStop === stop._id ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.04)',
+                    borderColor: form.assignedStop === stop._id ? '#00e5ff' : '#1e2d45',
+                    color: form.assignedStop === stop._id ? '#00e5ff' : '#e8f0fe',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
                 >
-                  <span>📍 {stop}</span>
-                  {form.stop === stop && <span>✓</span>}
+                  <span>📍 {stop.name}</span>
+                  {form.assignedStop === stop._id && <span>✓</span>}
                 </button>
               ))}
             </div>
@@ -194,9 +267,22 @@ export default function AddStudent() {
           {/* Submit */}
           <button
             type="submit"
-            style={{ width: '100%', padding: '16px', borderRadius: '14px', background: 'linear-gradient(135deg, #00e5ff, #0ea5e9)', border: 'none', color: '#0a0e1a', fontSize: '15px', fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginTop: '8px' }}
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '16px',
+              borderRadius: '14px',
+              background: loading ? 'rgba(0,229,255,0.4)' : 'linear-gradient(135deg, #00e5ff, #0ea5e9)',
+              border: 'none',
+              color: '#0a0e1a',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              marginTop: '8px',
+            }}
           >
-            Add Student →
+            {loading ? 'Adding Student...' : 'Add Student →'}
           </button>
 
         </form>
